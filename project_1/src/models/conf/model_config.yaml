@@ -1,0 +1,21 @@
+db:
+  PATH_DATASETS: C:\Users\roizi\PycharmProjects\pythonProject2\project_1\data\raw
+  url_1: https
+  url_2: https
+
+
+training_process:
+  max_epochs: 1000
+  batch_size: 256
+  criterion:
+  optimizer:
+  alpha: 0.3
+  lr: 1e-4
+  layers:
+    in_layer: [28, 28]
+    out_layer: 3
+
+
+trained_model:
+  final_models_dir: C:\Users\roizi\PycharmProjects\pythonProject2\project_1\models
+  tb_save_dir: C:\Users\roizi\PycharmProjects\pythonProject2\project_1\src\visualization
