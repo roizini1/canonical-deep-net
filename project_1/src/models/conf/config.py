@@ -21,6 +21,10 @@ class training_config:
     lr: float
     optimizer: str
     alpha: float
+    sigma_x: float
+    sigma_y: float
+    lambda_x: float
+    lambda_y: float
     layers: layers
 
 

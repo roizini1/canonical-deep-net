@@ -6,7 +6,6 @@ Sparse Canonical Correlation Analysis
 Project Organization
 ------------
 
-    ├── LICENSE
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
     │   ├── external       <- Data from third party sources.
@@ -49,9 +48,8 @@ Project Organization
     │   │   └── visualize.py
     │
     ├── spec-file.txt   <- The requirements file for reproducing the environment, e.g.
-    │                         generated with `conda list --explicit > spec-file.txt`
-    │
-    └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
+    │                          generated with `conda list --explicit > spec-file.txt`
+    └── LICENSE
 
 
 --------

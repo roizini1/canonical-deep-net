@@ -8,10 +8,10 @@ class MyModel(nn.Module):
         super().__init__()
         self.x_features = hp.layers.in_layer
         self.y_features = hp.layers.in_layer
-        self.sigma_x = 0.5
-        self.sigma_y = 0.5
-        self.lam_x = 5e-2
-        self.lam_y = 5e-2
+        self.sigma_x = hp.sigma_x
+        self.sigma_y = hp.sigma_y
+        self.lam_x = hp.lambda_x
+        self.lam_y = hp.lambda_y
         self.S_left_gate = StochasticGates(self.x_features, self.sigma_x, self.lam_x)
         self.S_right_gate = StochasticGates(self.y_features, self.sigma_y, self.lam_y)
         self.left_net = nn.Sequential(self.S_left_gate,

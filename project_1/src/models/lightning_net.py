@@ -22,8 +22,8 @@ class Net(pl.LightningModule):
         self.path_to_images = os.path.join(os.path.dirname(path), 'visualization')
 
     def metric(self, X_hat, Y_hat):
-        return - self.correlation_sdl(X_hat.squeeze(),
-                                      Y_hat.squeeze()) + self.net.S_left_gate.get_reg() + self.net.S_right_gate.get_reg()
+        gates_loss = self.net.S_left_gate.get_reg() + self.net.S_right_gate.get_reg()
+        return - self.correlation_sdl(X_hat.squeeze(), Y_hat.squeeze()) + gates_loss
 
     def correlation_sdl(self, X, Y):
         # normalization factor according to "Scalable and Effective Deep CCA via Soft Decorrelation" article:
@@ -54,6 +54,9 @@ class Net(pl.LightningModule):
         tensorboard_logs = {'train_loss': loss}
         self.log("loss", loss, prog_bar=True, logger=True)
         return {'loss': loss, 'log': tensorboard_logs}
+
+    def on_train_epoch_start(self) -> None:
+        self.C_t_1 = torch.zeros(self.hp.layers.out_layer)
 
     def on_train_epoch_end(self) -> None:
         torch.save(self.net.S_left_gate.mus.detach(), os.path.join(self.path_to_images, 'left_gate.pt'))

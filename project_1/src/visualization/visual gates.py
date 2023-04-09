@@ -4,8 +4,8 @@ import torch
 
 def gates_visuals():
     # base file dir
-    left_gate = torch.load('left_gate.pt')
-    right_gate = torch.load('right_gate.pt')
+    left_gate = torch.clamp(torch.load('left_gate.pt'), min=0, max=1)
+    right_gate = torch.clamp(torch.load('right_gate.pt'), min=0, max=1)
 
     # figures declaration:
     fig, ax = plt.subplots(1, 2)

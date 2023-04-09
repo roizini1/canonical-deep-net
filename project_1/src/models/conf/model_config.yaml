@@ -9,8 +9,13 @@ training_process:
   batch_size: 256
   criterion:
   optimizer:
-  alpha: 0.3
+  alpha: 0.05
   lr: 1e-4
+  sigma_x: 1.0
+  sigma_y: 1.0
+  lambda_x: 0.01
+  lambda_y: 0.01
+
   layers:
     in_layer: [28, 28]
     out_layer: 3

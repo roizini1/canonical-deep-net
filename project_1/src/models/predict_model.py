@@ -24,7 +24,7 @@ def pred():
     X_loader = DataLoader(X_ds, batch_size=128, num_workers=6)  # , shuffle=True
     Y_loader = DataLoader(Y_ds, batch_size=128, num_workers=6)  # , shuffle=True
 
-    X_out, x_label, Y_out, y_label = bests_model([X_loader, Y_loader])
+    X_out, x_label, Y_out, y_label = bests_model(X_loader, Y_loader)
     print(X_out)
 
     fig, ax = plt.subplots()
