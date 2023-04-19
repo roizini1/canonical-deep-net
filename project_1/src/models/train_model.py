@@ -6,7 +6,10 @@ from hydra.core.config_store import ConfigStore
 from omegaconf import OmegaConf
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import RichProgressBar, ModelCheckpoint, EarlyStopping
+
+# To open TensorBoard use: tensorboard --logdir=.....\pythonProject2\project_1\src\visualization\lightning_logs
 from pytorch_lightning.loggers import TensorBoardLogger
+
 from torch.utils.data import DataLoader
 from torchvision import transforms
 # db imports:
@@ -31,14 +34,14 @@ def my_app(cfg: Config_class) -> None:
         dirpath=cfg.trained_model.final_models_dir,
         filename='checkpoint_{epoch:02d}-{loss:.2f}',
         monitor='loss',
-        save_last=True,
+        save_last=False,
         save_top_k=1,
         mode='min',
     )
 
     stop_callback = EarlyStopping(
         monitor='loss',
-        patience=5,
+        patience=50,
         mode='min',  # for this loss mode is min
     )
 
@@ -68,7 +71,7 @@ def my_app(cfg: Config_class) -> None:
     trainX_ds = MNIST(cfg.db.PATH_DATASETS, train=True, download=True, transform=transform_X)
     trainY_ds = MNIST(cfg.db.PATH_DATASETS, train=True, download=True, transform=transform_Y)
 
-    # dataloaders
+    # data loaders
     trainX_loader = DataLoader(trainX_ds, batch_size=cfg.training_process.batch_size, num_workers=6)  # , shuffle=True
     trainY_loader = DataLoader(trainY_ds, batch_size=cfg.training_process.batch_size, num_workers=6)  # , shuffle=True
 

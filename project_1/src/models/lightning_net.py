@@ -2,6 +2,7 @@ import pytorch_lightning as pl
 import torch
 from sdcca import MyModel
 import os
+from torchvision.utils import make_grid
 
 
 class Net(pl.LightningModule):
@@ -13,7 +14,7 @@ class Net(pl.LightningModule):
         # pytorch net object:
         self.net = MyModel(hp)
 
-        self.C_t_1 = torch.zeros(self.hp.layers.out_layer)  # , device="cuda:0")
+        self.C_t_1 = torch.zeros(self.hp.layers.out_layer)
 
         self.N_factor = 0  # shown as ct in the article
 
@@ -25,52 +26,60 @@ class Net(pl.LightningModule):
         gates_loss = self.net.S_left_gate.get_reg() + self.net.S_right_gate.get_reg()
         return - self.correlation_sdl(X_hat.squeeze(), Y_hat.squeeze()) + gates_loss
 
+    """
+    @staticmethod
+    def corr(X, Y):
+        m = X.size(dim=1)
+        C_mini = torch.matmul(torch.t(Y), X) / m
+        corr = torch.sum(torch.abs(C_mini.fill_diagonal_(0)))
+        return corr
+    """
+
     def correlation_sdl(self, X, Y):
         # normalization factor according to "Scalable and Effective Deep CCA via Soft Decorrelation" article:
         self.N_factor = self.hp.alpha * self.N_factor + 1
 
-        m = X.size(dim=1)
+        m = X.size(dim=0)
         C_mini = torch.matmul(torch.t(Y), X) / m
 
-        self.C_t_1 = (self.hp.alpha * self.C_t_1.detach() + C_mini) / self.N_factor
-        corr_sdl = torch.sum(torch.abs((self.C_t_1 + C_mini).fill_diagonal_(0)))
+        self.C_t_1 = (self.hp.alpha * self.C_t_1.detach() + C_mini)
+        corr_sdl = torch.sum(torch.abs((self.C_t_1 / self.N_factor).fill_diagonal_(0)))
         return corr_sdl
 
-    def forward(self, batch):
-        [X, x_label], [Y, y_label] = batch
-        left_gate = torch.load(os.path.join(self.path_to_images, 'left_gate.pt'))
-        right_gate = torch.load(os.path.join(self.path_to_images, 'right_gate.pt'))
-        X_out = self.net.left_net(X * left_gate)
+    def right_net_forward(self, Y):
+        right_gate = self.net.S_right_gate.get_gates()
         Y_out = self.net.right_net(Y * right_gate)
-        return X_out, x_label, Y_out, y_label
+        return Y_out
+
+    def left_net_forward(self, X):
+        left_gate = self.net.S_left_gate.get_gates()
+        X_out = self.net.left_net(X * left_gate)
+        return X_out
 
     def training_step(self, batch):
         [X, _], [Y, _] = batch
         X_hat, Y_hat = self.net(X, Y)
-
         loss = self.metric(X_hat, Y_hat)
 
         # tensorboard logs:
-        tensorboard_logs = {'train_loss': loss}
         self.log("loss", loss, prog_bar=True, logger=True)
-        return {'loss': loss, 'log': tensorboard_logs}
+        return {'loss': loss}
 
     def on_train_epoch_start(self) -> None:
+        self.N_factor = 0
         self.C_t_1 = torch.zeros(self.hp.layers.out_layer)
 
     def on_train_epoch_end(self) -> None:
-        torch.save(self.net.S_left_gate.mus.detach(), os.path.join(self.path_to_images, 'left_gate.pt'))
-        torch.save(self.net.S_right_gate.mus.detach(), os.path.join(self.path_to_images, 'right_gate.pt'))
-
-    """
-    def test_step(self, batch):
-        [X, x_label], [Y, y_label] = batch
-        left_gate = torch.load(os.path.join(self.path_to_images, 'left_gate.pt'))
-        right_gate = torch.load(os.path.join(self.path_to_images, 'right_gate.pt'))
-        X_out = self.net.left_net(X * left_gate)
-        Y_out = self.net.right_net(Y * right_gate)
-        return X_out, x_label, Y_out, y_label
-    """
+        # Convert the example image to a grid
+        left_gate_grid = make_grid(self.net.S_left_gate.mus)
+        right_gate_grid = make_grid(self.net.S_right_gate.mus)
+        # Log the image to TensorBoard
+        self.logger.experiment.add_image("Left Gate mus pram", left_gate_grid, self.current_epoch)
+        self.logger.experiment.add_image("Right Gate mus pram", right_gate_grid, self.current_epoch)
+        self.logger.experiment.add_image("Left Gate", make_grid(self.net.S_left_gate.get_gates()),
+                                         self.current_epoch)
+        self.logger.experiment.add_image("Right Gate", make_grid(self.net.S_right_gate.get_gates()),
+                                         self.current_epoch)
 
     def configure_optimizers(self):
         # default optimizer:
