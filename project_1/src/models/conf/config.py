@@ -19,7 +19,9 @@ class training_config:
     max_epochs: int
     batch_size: int
     lr: float
+    lr_dim_reduction: float
     optimizer: str
+    gates_learning: bool
     alpha: float
     sigma_x: float
     sigma_y: float

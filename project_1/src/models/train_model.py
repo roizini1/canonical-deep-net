@@ -55,6 +55,7 @@ def my_app(cfg: Config_class) -> None:
         callbacks=callback_list,
         logger=tb_logger,
     )
+
     transform_X = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5,), (0.5,)),

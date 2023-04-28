@@ -20,11 +20,3 @@ def gates_visuals(left_gate, right_gate):
     fig.colorbar(im2, fraction=0.047)
 
     return fig
-
-
-if __name__ == "__main__":
-    figure = gates_visuals()
-    figure.show()
-
-    # save figure as image
-    figure.savefig("Gates_visualization")
